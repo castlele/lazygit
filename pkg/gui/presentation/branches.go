@@ -131,6 +131,14 @@ func GetBranchTextStyle(name string) style.TextStyle {
 		return value
 	}
 
+	for key, color := range branchPrefixColorCache {
+		isMatchingPattern, _ := utils.FindStringSubmatch(name, key)
+
+		if isMatchingPattern {
+			return color
+		}
+	}
+
 	switch branchType {
 	case "feature":
 		return style.FgGreen
