@@ -18,6 +18,7 @@ import (
 	"github.com/samber/lo"
 )
 
+var branchPatternsColorCache = make(map[string]style.TextStyle)
 var branchPrefixColorCache = make(map[string]style.TextStyle)
 
 func GetBranchListDisplayStrings(
@@ -125,18 +126,18 @@ func getBranchDisplayStrings(
 
 // GetBranchTextStyle branch color
 func GetBranchTextStyle(name string) style.TextStyle {
+	for key, color := range branchPatternsColorCache {
+		isMatchingPattern, matches := utils.FindStringSubmatch(name, key)
+
+		if isMatchingPattern && len(matches) == 1 && matches[0] == name {
+			return color
+		}
+	}
+
 	branchType := strings.Split(name, "/")[0]
 
 	if value, ok := branchPrefixColorCache[branchType]; ok {
 		return value
-	}
-
-	for key, color := range branchPrefixColorCache {
-		isMatchingPattern, _ := utils.FindStringSubmatch(name, key)
-
-		if isMatchingPattern {
-			return color
-		}
 	}
 
 	switch branchType {
@@ -197,6 +198,10 @@ func BranchStatus(
 	return result
 }
 
-func SetCustomBranches(customBranchColors map[string]string) {
+func SetCustomBranches(
+	customBranchColors map[string]string,
+	customBranchesColorsByPatterns map[string]string,
+) {
 	branchPrefixColorCache = utils.SetCustomColors(customBranchColors)
+	branchPatternsColorCache = utils.SetCustomColors(customBranchesColorsByPatterns)
 }
